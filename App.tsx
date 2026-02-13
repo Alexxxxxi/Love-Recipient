@@ -8,11 +8,14 @@ import PrintingSlot from './components/PrintingSlot';
 
 declare const FaceDetection: any;
 
+// 真正的洗牌算法 (Fisher-Yates Shuffle)
 const shuffleArray = <T,>(array: T[]): T[] => {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+    const temp = result[i];
+    result[i] = result[j];
+    result[j] = temp;
   }
   return result;
 };
@@ -86,38 +89,44 @@ const App: React.FC = () => {
 
   const generateLines = (name: string): ReceiptLine[] => {
     const lines: ReceiptLine[] = [];
-    let delay = 0;
+    let currentDelay = 0;
 
     const injectName = (text: string) => text.replace(/你们/g, `${name}`).replace(/属于/g, `属于 ${name} 的`);
 
+    // 1. 系统准备阶段 (取3条不重复的)
     const shuffledSystem = shuffleArray(COPY_LIBRARY.SYSTEM);
-    lines.push({ id: 'sys1', type: 'SYSTEM', text: injectName(shuffledSystem[0]), delay });
-    delay += PRINT_SPEED;
-    lines.push({ id: 'sys2', type: 'SYSTEM', text: injectName(shuffledSystem[1]), delay });
-    delay += PRINT_SPEED;
-
-    const shuffledIngredients = shuffleArray(COPY_LIBRARY.INGREDIENT);
-    shuffledIngredients.slice(0, 4).forEach((text, i) => {
-      lines.push({ id: `ing${i}`, type: 'INGREDIENT', text, delay });
-      delay += PRINT_SPEED;
+    [0, 1, 2].forEach(idx => {
+      lines.push({ id: `sys-${idx}`, type: 'SYSTEM', text: injectName(shuffledSystem[idx]), delay: currentDelay });
+      currentDelay += PRINT_SPEED;
     });
 
-    const randomAnalysis = COPY_LIBRARY.ANALYSIS[Math.floor(Math.random() * COPY_LIBRARY.ANALYSIS.length)];
-    lines.push({ id: 'ana1', type: 'ANALYSIS', text: injectName(randomAnalysis), delay });
-    delay += PRINT_SPEED;
+    // 2. 配料阶段 (取3条不重复的)
+    const shuffledIngredients = shuffleArray(COPY_LIBRARY.INGREDIENT);
+    [0, 1, 2].forEach(idx => {
+      lines.push({ id: `ing-${idx}`, type: 'INGREDIENT', text: shuffledIngredients[idx], delay: currentDelay });
+      currentDelay += PRINT_SPEED;
+    });
 
-    lines.push({ id: 'div1', type: 'DIVIDER', text: '--------------------------', delay });
-    delay += 400;
-    lines.push({ id: 'item1', type: 'ITEM', text: `签署人: ${name}`, delay });
-    delay += 600;
+    // 3. 核心分析 (取1条)
+    const randomAnalysis = shuffleArray(COPY_LIBRARY.ANALYSIS)[0];
+    lines.push({ id: 'ana-1', type: 'ANALYSIS', text: injectName(randomAnalysis), delay: currentDelay });
+    currentDelay += PRINT_SPEED;
 
-    const randomPrice = COPY_LIBRARY.PRICE[Math.floor(Math.random() * COPY_LIBRARY.PRICE.length)];
-    lines.push({ id: 'price1', type: 'PRICE', text: `价值: ${randomPrice}`, delay });
-    delay += 400;
+    // 4. 分割线
+    lines.push({ id: 'div-1', type: 'DIVIDER', text: '--------------------------', delay: currentDelay });
+    currentDelay += 400;
 
-    const randomTotal = COPY_LIBRARY.TOTAL[Math.floor(Math.random() * COPY_LIBRARY.TOTAL.length)];
-    lines.push({ id: 'total1', type: 'TOTAL', text: `有效期: ${randomTotal}`, delay });
-    delay += 800;
+    // 5. 底部结算
+    lines.push({ id: 'item-1', type: 'ITEM', text: `签署人: ${name}`, delay: currentDelay });
+    currentDelay += 600;
+
+    const randomPrice = shuffleArray(COPY_LIBRARY.PRICE)[0];
+    lines.push({ id: 'price-1', type: 'PRICE', text: `价值: ${randomPrice}`, delay: currentDelay });
+    currentDelay += 400;
+
+    const randomTotal = shuffleArray(COPY_LIBRARY.TOTAL)[0];
+    lines.push({ id: 'total-1', type: 'TOTAL', text: `有效期: ${randomTotal}`, delay: currentDelay });
+    currentDelay += 800;
 
     return lines;
   };
@@ -129,17 +138,22 @@ const App: React.FC = () => {
     setAppState('PRINTING');
     setStatusMsg(null);
     setIsAnalyzing(false);
+    setVisibleLines([]);
 
     let currentLineIndex = 0;
     const printNextLine = () => {
       if (currentLineIndex < allLines.length) {
-        setVisibleLines(prev => [...prev, allLines[currentLineIndex]]);
+        const nextLine = allLines[currentLineIndex];
+        setVisibleLines(prev => [...prev, nextLine]);
         triggerShake();
         currentLineIndex++;
-        const nextDelay = allLines[currentLineIndex]?.delay 
-          ? allLines[currentLineIndex].delay - allLines[currentLineIndex - 1].delay 
-          : 1000;
-        printIntervalRef.current = window.setTimeout(printNextLine, nextDelay);
+        
+        // 计算下一行的等待时间
+        const nextInLine = allLines[currentLineIndex];
+        const waitTime = nextInLine ? (nextInLine.delay - nextLine.delay) : 1000;
+        
+        printIntervalRef.current = window.setTimeout(printNextLine, Math.max(200, waitTime));
+        
         if (containerRef.current) {
           containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
         }
@@ -181,7 +195,7 @@ const App: React.FC = () => {
             } else if (faceCount === 1) {
               advice = "怎么只有一个人呢？这张回执正在等待另一个灵魂的出现 ✨";
             } else {
-              advice = "这份契约太拥挤啦，快换一张只有你们两人的纯净合影吧 🕊️";
+              advice = "这张照片太热闹啦，请上传一张只有你们两个人的纯净合影。";
             }
             setStatusMsg({ type: 'error', text: advice });
             setIsAnalyzing(false);
@@ -191,7 +205,7 @@ const App: React.FC = () => {
         try {
           await faceDetectionRef.current.send({ image: img });
         } catch (err) {
-          setStatusMsg({ type: 'error', text: '画面太糊啦，AI 感应不到你们的甜蜜，换一张试试？' });
+          setStatusMsg({ type: 'error', text: '画面太模糊或格式不支持，换一张清晰的合影试试？' });
           setIsAnalyzing(false);
         }
       };

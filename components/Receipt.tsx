@@ -16,16 +16,16 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
   const receiptRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // 生成小票内部的背景贴纸
+  // 生成小票内部的背景贴纸 (增加多样性和数量)
   const stickers = useMemo(() => {
-    const icons = ['❤️', '✨', '🌸', '⭐', '🕊️', '🧸', '🍭'];
-    return Array.from({ length: 12 }).map((_, i) => ({
+    const icons = ['❤️', '✨', '🌸', '⭐', '🕊️', '🧸', '🍭', '🎀', '💌', '🐾', '🦋', '💍'];
+    return Array.from({ length: 16 }).map((_, i) => ({
       id: i,
       icon: icons[Math.floor(Math.random() * icons.length)],
-      top: `${Math.random() * 90}%`,
-      left: `${Math.random() * 90}%`,
+      top: `${Math.random() * 92}%`,
+      left: `${Math.random() * 85}%`,
       rotation: `${Math.random() * 360}deg`,
-      size: `${16 + Math.random() * 24}px`,
+      size: `${18 + Math.random() * 26}px`,
     }));
   }, []);
 
@@ -58,11 +58,11 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
         ref={receiptRef}
         className={`w-full bg-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] flex flex-col p-6 pt-12 pb-14 transition-all duration-1000 ease-out origin-top overflow-hidden jagged-top jagged-bottom relative`}
       >
-        {/* 小票背景装饰贴纸 (低透明度，会被 html2canvas 捕获) */}
+        {/* 小票背景装饰贴纸 (透明度提升至 0.35) */}
         {stickers.map(s => (
           <div
             key={s.id}
-            className="absolute pointer-events-none select-none z-0 opacity-[0.06]"
+            className="absolute pointer-events-none select-none z-0 opacity-[0.35]"
             style={{
               top: s.top,
               left: s.left,
@@ -77,21 +77,21 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
         {/* 页眉 */}
         <div className="text-center mb-6 space-y-1 relative z-10">
           <div className="text-xs text-[#ff4d6d] font-bold mb-1 tracking-widest">MEMORY VOUCHER</div>
-          <h2 className="text-2xl font-bold tracking-[0.4em] border-b-2 border-[#2c2c2c] pb-4 mb-2">甜蜜存根</h2>
+          <h2 className="text-2xl font-bold tracking-[0.4em] border-b-2 border-[#2c2c2c] pb-4 mb-2 text-[#2c2c2c]">甜蜜存根</h2>
           
-          <div className="flex flex-col items-center mt-2 opacity-80">
-             <div className="text-[10px] mono-font uppercase tracking-tighter">Recipient / 专属对象</div>
-             <div className="text-sm font-bold border-b border-black/10 px-4 min-w-[120px] pb-1 mt-1">
+          <div className="flex flex-col items-center mt-2 opacity-90">
+             <div className="text-[10px] mono-font uppercase tracking-tighter text-[#666]">Recipient / 专属对象</div>
+             <div className="text-sm font-bold border-b border-black/10 px-4 min-w-[140px] pb-1 mt-1 text-[#2c2c2c]">
                {data.userName}
              </div>
           </div>
           
-          <p className="text-[10px] opacity-40 mono-font mt-4">2026情人节限定 / 存根号: MEM-2026-0214</p>
+          <p className="text-[10px] opacity-40 mono-font mt-4 italic text-[#2c2c2c]">2026情人节限定 / 存根号: MEM-2026-0214</p>
         </div>
 
-        {/* 还原色彩的照片 */}
+        {/* 照片区域 */}
         {data.imageUrl && (
-          <div className="w-full aspect-[4/5] mb-8 border-4 border-double border-[#2c2c2c]/10 p-1 bg-[#fff] relative z-10">
+          <div className="w-full aspect-[4/5] mb-8 border-4 border-double border-[#2c2c2c]/15 p-1 bg-[#fff] relative z-10 shadow-sm">
              <img 
                src={data.imageUrl} 
                alt="甜蜜瞬间" 
@@ -105,13 +105,13 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
           {visibleLines.map((line) => (
             <div key={line.id} className="min-h-[1.5em]">
               {line.type === 'DIVIDER' ? (
-                <div className="py-2 text-center opacity-30 tracking-widest">————————————————————————</div>
+                <div className="py-2 text-center opacity-30 tracking-widest text-[#2c2c2c]">————————————————————————</div>
               ) : line.type === 'ITEM' || line.type === 'TOTAL' || line.type === 'PRICE' ? (
-                <div className="flex justify-between font-bold pt-2 border-t border-dashed border-[#2c2c2c]/10 mt-2">
+                <div className="flex justify-between font-bold pt-2 border-t border-dashed border-[#2c2c2c]/10 mt-2 text-[#2c2c2c]">
                   <TypewriterLine text={line.text} />
                 </div>
               ) : (
-                <div className="opacity-80 italic">
+                <div className={`italic ${line.type === 'SYSTEM' ? 'text-[#a04040]' : 'text-[#2c2c2c] opacity-85'}`}>
                   <TypewriterLine text={line.text} />
                 </div>
               )}
@@ -155,7 +155,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
           onClick={onReset}
           className="my-10 text-[#a08080] text-xs underline underline-offset-8 opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1 mb-20"
         >
-          记录下一段浪漫故事
+          重新开启浪漫记忆
         </button>
       )}
     </div>
