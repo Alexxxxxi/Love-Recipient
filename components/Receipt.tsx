@@ -40,8 +40,9 @@ const Receipt: React.FC<ReceiptProps> = ({ data, visibleLines, isFinished, onRes
         useCORS: true,
       });
       const link = document.createElement('a');
-      link.download = `甜蜜存根-${data.userName || '心动瞬间'}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.download = `甜蜜存根-${data.userName || '心动瞬间'}.jpg`;
+      // 使用 image/jpeg 格式，并设置 0.9 的质量
+      link.href = canvas.toDataURL('image/jpeg', 0.9);
       link.click();
       alert("❤️ 存根已下载！\n这份约定已存入你们的时光宝盒。");
     } catch (error) {
