@@ -62,7 +62,34 @@
 
     .swinging { animation: swing 3s ease-in-out infinite; transform-origin: top center; }
 
-    /* 移除 grayscale(100%)，保留质感提升 */
+    /* 隐藏彩蛋特效 */
+    @keyframes heart-beat {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.1); }
+      40% { transform: scale(1.2); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .animate-heart-beat {
+      animation: heart-beat 1.5s infinite ease-out;
+    }
+
+    @keyframes rose-petal-fall {
+      0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    .rose-petal {
+      position: fixed;
+      top: 0; /* 强制从屏幕顶部对齐 */
+      pointer-events: none;
+      z-index: 150; /* 提升层级到彩蛋层之上或并列 */
+      animation: rose-petal-fall 5s linear infinite;
+    }
+
     .thermal-img {
       filter: contrast(110%) brightness(105%);
       mix-blend-mode: multiply;
@@ -70,6 +97,16 @@
     }
 
     .mono-font { font-family: 'Courier Prime', monospace; }
+
+    /* 禁止长按默认菜单，用于触发自定义彩蛋 */
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
   </style>
   <script type="importmap">
   {
@@ -88,17 +125,5 @@
 <body class="text-[#2c2c2c]">
   <div id="root"></div>
   <div class="paper-texture"></div>
-  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
-
-/*
-  ____  _                      __  __                  _ _ 
- |___ \| |__   ___ _ __   __ _|  \/  | ___ _ __   __ _(_|_)
-   __) | '_ \ / _ \ '_ \ / _` | |\/| |/ _ \ '_ \ / _` | | |
-  / __/| | | |  __/ | | | (_| | |  | |  __/ | | | (_| | | |
- |_____|_| |_|\___|_| |_|\__, |_|  |_|\___|_| |_|\__, |_|/ 
-                         |___/                   |___/     
-                         
-  For my girl, Happy Valentine's Day 2026.
-*/

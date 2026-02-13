@@ -1,14 +1,14 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Camera, Heart, Loader2, AlertCircle, Info } from 'lucide-react';
+import { Camera, Heart, Loader2, Info, X } from 'lucide-react';
 import { AppState, ReceiptLine, ReceiptData } from './types';
-import { COPY_LIBRARY, PRINT_SPEED, ERROR_MESSAGES } from './constants';
+import { COPY_LIBRARY, PRINT_SPEED } from './constants';
 import Receipt from './components/Receipt';
 import PrintingSlot from './components/PrintingSlot';
+import TypewriterLine from './components/TypewriterLine';
 
 declare const FaceDetection: any;
 
-// 真正的洗牌算法 (Fisher-Yates Shuffle)
 const shuffleArray = <T,>(array: T[]): T[] => {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
@@ -54,6 +54,64 @@ const BackgroundParticles: React.FC = () => {
   );
 };
 
+const SecretEasterEgg: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const petals = useMemo(() => {
+    return Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 3}s`,
+      duration: `${3 + Math.random() * 3}s`,
+      size: `${20 + Math.random() * 20}px`
+    }));
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-in fade-in duration-500">
+      {petals.map(p => (
+        <div 
+          key={p.id} 
+          className="rose-petal"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+            fontSize: p.size
+          }}
+        >
+          🌹
+        </div>
+      ))}
+      
+      <div className="flex flex-col items-center max-w-[300px] w-full px-4">
+        <div className="text-8xl mb-12 animate-heart-beat drop-shadow-[0_0_30px_rgba(255,77,109,0.5)]">❤️</div>
+        
+        <div className="w-full bg-white shadow-2xl p-6 jagged-top jagged-bottom mono-font text-[#2c2c2c] animate-in slide-in-from-bottom-10 duration-700 delay-300">
+          <div className="text-[10px] opacity-40 mb-4 border-b border-black/10 pb-2">EXCLUSIVE_KERNEL_ACCESS_GRANTED</div>
+          <div className="text-sm font-bold leading-relaxed mb-4">
+            <TypewriterLine text="宝宝妞郑梦吉，2026情人节快乐 ❤️" speed={80} />
+          </div>
+          <div className="text-[11px] opacity-70 leading-relaxed italic">
+            <TypewriterLine text="这是我为你写的底层代码，只有你能看到。" speed={50} />
+          </div>
+          <div className="mt-6 flex flex-col items-center gap-2 opacity-20">
+             <div className="flex gap-1 h-4">
+                {[...Array(20)].map((_, i) => <div key={i} className="bg-black w-[1px]" style={{ height: `${Math.random() * 100}%` }} />)}
+             </div>
+             <div className="text-[8px]">ROOT://Valentine2026/Secret</div>
+          </div>
+        </div>
+        
+        <button 
+          onClick={onClose}
+          className="mt-12 p-3 rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/40 transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>('IDLE');
   const [userName, setUserName] = useState<string>('');
@@ -62,11 +120,20 @@ const App: React.FC = () => {
   const [isShaking, setIsShaking] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'error' | 'info' | 'success', text: string } | null>(null);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [holdTime, setHoldTime] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const printIntervalRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const faceDetectionRef = useRef<any>(null);
+  
+  const longPressTimerRef = useRef<number | null>(null);
+  const startTimestampRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const EASTER_EGG_TIME = 5210;
+  const PROGRESS_START_TIME = 3000;
 
   useEffect(() => {
     if (typeof FaceDetection !== 'undefined') {
@@ -81,6 +148,42 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const updateHoldProgress = useCallback(() => {
+    if (startTimestampRef.current) {
+      const elapsed = Date.now() - startTimestampRef.current;
+      setHoldTime(elapsed);
+      if (elapsed < EASTER_EGG_TIME) {
+        rafRef.current = requestAnimationFrame(updateHoldProgress);
+      }
+    }
+  }, []);
+
+  const handlePointerDown = useCallback(() => {
+    startTimestampRef.current = Date.now();
+    rafRef.current = requestAnimationFrame(updateHoldProgress);
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      setShowEasterEgg(true);
+      setHoldTime(0);
+      startTimestampRef.current = null;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
+    }, EASTER_EGG_TIME);
+  }, [updateHoldProgress]);
+
+  const handlePointerUp = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    startTimestampRef.current = null;
+    setHoldTime(0);
+  }, []);
+
   const triggerShake = useCallback(() => {
     setIsShaking(true);
     if ("vibrate" in navigator) navigator.vibrate(50);
@@ -90,33 +193,27 @@ const App: React.FC = () => {
   const generateLines = (name: string): ReceiptLine[] => {
     const lines: ReceiptLine[] = [];
     let currentDelay = 0;
-
     const injectName = (text: string) => text.replace(/你们/g, `${name}`).replace(/属于/g, `属于 ${name} 的`);
 
-    // 1. 系统准备阶段 (取3条不重复的)
     const shuffledSystem = shuffleArray(COPY_LIBRARY.SYSTEM);
     [0, 1, 2].forEach(idx => {
       lines.push({ id: `sys-${idx}`, type: 'SYSTEM', text: injectName(shuffledSystem[idx]), delay: currentDelay });
       currentDelay += PRINT_SPEED;
     });
 
-    // 2. 配料阶段 (取3条不重复的)
     const shuffledIngredients = shuffleArray(COPY_LIBRARY.INGREDIENT);
     [0, 1, 2].forEach(idx => {
       lines.push({ id: `ing-${idx}`, type: 'INGREDIENT', text: shuffledIngredients[idx], delay: currentDelay });
       currentDelay += PRINT_SPEED;
     });
 
-    // 3. 核心分析 (取1条)
     const randomAnalysis = shuffleArray(COPY_LIBRARY.ANALYSIS)[0];
     lines.push({ id: 'ana-1', type: 'ANALYSIS', text: injectName(randomAnalysis), delay: currentDelay });
     currentDelay += PRINT_SPEED;
 
-    // 4. 分割线
     lines.push({ id: 'div-1', type: 'DIVIDER', text: '--------------------------', delay: currentDelay });
     currentDelay += 400;
 
-    // 5. 底部结算
     lines.push({ id: 'item-1', type: 'ITEM', text: `签署人: ${name}`, delay: currentDelay });
     currentDelay += 600;
 
@@ -147,13 +244,9 @@ const App: React.FC = () => {
         setVisibleLines(prev => [...prev, nextLine]);
         triggerShake();
         currentLineIndex++;
-        
-        // 计算下一行的等待时间
         const nextInLine = allLines[currentLineIndex];
         const waitTime = nextInLine ? (nextInLine.delay - nextLine.delay) : 1000;
-        
         printIntervalRef.current = window.setTimeout(printNextLine, Math.max(200, waitTime));
-        
         if (containerRef.current) {
           containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
         }
@@ -167,10 +260,8 @@ const App: React.FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsAnalyzing(true);
     setStatusMsg({ type: 'info', text: 'AI 正在深度扫描画面的心动信号...' });
-
     const reader = new FileReader();
     reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
@@ -182,30 +273,23 @@ const App: React.FC = () => {
           setIsAnalyzing(false);
           return;
         }
-
         faceDetectionRef.current.onResults((results: any) => {
           const faceCount = results.detections ? results.detections.length : 0;
           if (faceCount === 2) {
             setStatusMsg({ type: 'success', text: '回忆匹配成功！正在同步你们的心跳...' });
             setTimeout(() => startPrinting(dataUrl), 800);
           } else {
-            let advice = "";
-            if (faceCount === 0) {
-              advice = "这里似乎还未留下你们的足迹。快上传一张合影，开启这段专属浪漫吧 🍃";
-            } else if (faceCount === 1) {
-              advice = "怎么只有一个人呢？这张回执正在等待另一个灵魂的出现 ✨";
-            } else {
-              advice = "这张照片太热闹啦，请上传一张只有你们两个人的纯净合影。";
-            }
+            let advice = faceCount === 0 ? "这里似乎还未留下你们的足迹。快上传一张合影吧 🍃" : 
+                         faceCount === 1 ? "怎么只有一个人呢？这份回执在等待另一个灵魂 ✨" : 
+                         "这张照片太热闹啦，请上传只有你们两人的纯净合影。";
             setStatusMsg({ type: 'error', text: advice });
             setIsAnalyzing(false);
           }
         });
-
         try {
           await faceDetectionRef.current.send({ image: img });
         } catch (err) {
-          setStatusMsg({ type: 'error', text: '画面太模糊或格式不支持，换一张清晰的合影试试？' });
+          setStatusMsg({ type: 'error', text: '画面处理异常，换一张清晰的合影试试？' });
           setIsAnalyzing(false);
         }
       };
@@ -214,10 +298,37 @@ const App: React.FC = () => {
     e.target.value = '';
   };
 
+  // 计算进度条进度
+  const progressPercent = holdTime > PROGRESS_START_TIME 
+    ? Math.min(100, ((holdTime - PROGRESS_START_TIME) / (EASTER_EGG_TIME - PROGRESS_START_TIME)) * 100) 
+    : 0;
+
   return (
-    <div className={`h-screen flex flex-col relative overflow-hidden ${isShaking ? 'shaking' : ''}`}>
+    <div 
+      className={`h-screen flex flex-col relative overflow-hidden ${isShaking ? 'shaking' : ''}`}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
       <BackgroundParticles />
       
+      {showEasterEgg && <SecretEasterEgg onClose={() => setShowEasterEgg(false)} />}
+
+      {/* 长按进度条 (3秒后显现) */}
+      {holdTime > PROGRESS_START_TIME && !showEasterEgg && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[200px] z-50 animate-in fade-in duration-300 flex flex-col items-center">
+          <div className="w-full h-1.5 bg-[#2c2c2c]/10 rounded-full overflow-hidden backdrop-blur-sm">
+            <div 
+              className="h-full bg-[#ff4d6d] transition-all duration-75 ease-linear"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <div className="mt-2 text-[10px] mono-font text-[#ff4d6d] font-bold tracking-widest bg-white/50 px-2 py-0.5 rounded-sm">
+             LOADING 5.21%
+          </div>
+        </div>
+      )}
+
       <div className="flex-none pt-12 pb-6 z-30">
         <h1 className="text-3xl font-bold text-[#a04040] tracking-[0.4em] text-center drop-shadow-sm">
           浪漫回执
@@ -253,15 +364,9 @@ const App: React.FC = () => {
                   className={`w-full group relative flex items-center justify-center space-x-2 bg-[#ff4d6d] text-white px-8 py-5 rounded-full shadow-lg active:scale-95 transition-all ${isAnalyzing ? 'opacity-50' : 'hover:bg-[#ff758f] shadow-[#ff4d6d]/20'}`}
                 >
                   {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span className="font-bold tracking-wider">正在感应心动信号...</span>
-                    </>
+                    <><Loader2 className="w-5 h-5 animate-spin" /><span className="font-bold tracking-wider">正在感应心动信号...</span></>
                   ) : (
-                    <>
-                      <Camera className="w-5 h-5" />
-                      <span className="font-bold tracking-wider">签署浪漫记忆</span>
-                    </>
+                    <><Camera className="w-5 h-5" /><span className="font-bold tracking-wider">签署浪漫记忆</span></>
                   )}
                 </button>
 
@@ -276,7 +381,6 @@ const App: React.FC = () => {
                   </div>
                 )}
               </div>
-              
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
           )}
