@@ -1,0 +1,7 @@
+{
+  "name": "The Love Receipt",
+  "description": "A romantic Valentine's Day interactive web app that prints a customized thermal-style 'Love Receipt' from your uploaded memories.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

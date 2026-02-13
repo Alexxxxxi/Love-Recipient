@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>浪漫回执 - 2026 情人节限定</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Noto Sans SC', sans-serif;
+      background: linear-gradient(135deg, #F4E1D2 0%, #FFF5EF 100%);
+    }
+    
+    .paper-texture {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; opacity: 0.05; z-index: 50;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3BaseFilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/baseFilter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* 漂浮动画 */
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      animation: float linear infinite;
+    }
+
+    .jagged-top {
+      clip-path: polygon(0% 0%, 2.5% 2%, 5% 0%, 7.5% 2%, 10% 0%, 12.5% 2%, 15% 0%, 17.5% 2%, 20% 0%, 22.5% 2%, 25% 0%, 27.5% 2%, 30% 0%, 32.5% 2%, 35% 0%, 37.5% 2%, 40% 0%, 42.5% 2%, 45% 0%, 47.5% 2%, 50% 0%, 52.5% 2%, 55% 0%, 57.5% 2%, 60% 0%, 62.5% 2%, 65% 0%, 67.5% 2%, 70% 0%, 72.5% 2%, 75% 0%, 77.5% 2%, 80% 0%, 82.5% 2%, 85% 0%, 87.5% 2%, 90% 0%, 92.5% 2%, 95% 0%, 97.5% 2%, 100% 0%, 100% 100%, 0% 100%);
+    }
+
+    .jagged-bottom {
+      clip-path: polygon(0% 0%, 100% 0%, 100% 98%, 97.5% 100%, 95% 98%, 92.5% 100%, 90% 98%, 87.5% 100%, 85% 98%, 82.5% 100%, 80% 98%, 77.5% 100%, 75% 98%, 72.5% 100%, 70% 98%, 67.5% 100%, 65% 98%, 62.5% 100%, 60% 98%, 57.5% 100%, 55% 98%, 52.5% 100%, 50% 98%, 47.5% 100%, 45% 98%, 42.5% 100%, 40% 98%, 37.5% 100%, 35% 98%, 32.5% 100%, 30% 98%, 27.5% 100%, 25% 98%, 22.5% 100%, 20% 98%, 17.5% 100%, 15% 98%, 12.5% 100%, 10% 98%, 7.5% 100%, 5% 98%, 2.5% 100%, 0% 98%);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0,0); }
+      25% { transform: translate(1px, -1px); }
+      75% { transform: translate(-1px, 1px); }
+    }
+
+    .shaking { animation: shake 0.1s infinite; }
+
+    @keyframes swing {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    .swinging { animation: swing 3s ease-in-out infinite; transform-origin: top center; }
+
+    /* 移除 grayscale(100%)，保留质感提升 */
+    .thermal-img {
+      filter: contrast(110%) brightness(105%);
+      mix-blend-mode: multiply;
+      opacity: 0.95;
+    }
+
+    .mono-font { font-family: 'Courier Prime', monospace; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+      "react/": "https://esm.sh/react@^19.2.4/",
+      "react": "https://esm.sh/react@^19.2.4",
+      "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+      "@mediapipe/face_detection": "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js",
+      "html2canvas": "https://esm.sh/html2canvas@1.4.1"
+    }
+  }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+</head>
+<body class="text-[#2c2c2c]">
+  <div id="root"></div>
+  <div class="paper-texture"></div>
+</body>
+</html>
