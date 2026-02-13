@@ -298,7 +298,6 @@ const App: React.FC = () => {
     e.target.value = '';
   };
 
-  // 计算进度条进度
   const progressPercent = holdTime > PROGRESS_START_TIME 
     ? Math.min(100, ((holdTime - PROGRESS_START_TIME) / (EASTER_EGG_TIME - PROGRESS_START_TIME)) * 100) 
     : 0;
@@ -314,9 +313,15 @@ const App: React.FC = () => {
       
       {showEasterEgg && <SecretEasterEgg onClose={() => setShowEasterEgg(false)} />}
 
-      {/* 长按进度条 (3秒后显现) */}
+      {/* 底部固定宣传小字 */}
+      <div className="absolute bottom-2 w-full text-center z-[40]">
+        <span className="text-[9px] uppercase tracking-[0.2em] text-[#a08080]/40 mono-font">
+          Made by @Alexxxxxi
+        </span>
+      </div>
+
       {holdTime > PROGRESS_START_TIME && !showEasterEgg && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[200px] z-50 animate-in fade-in duration-300 flex flex-col items-center">
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 w-[200px] z-50 animate-in fade-in duration-300 flex flex-col items-center">
           <div className="w-full h-1.5 bg-[#2c2c2c]/10 rounded-full overflow-hidden backdrop-blur-sm">
             <div 
               className="h-full bg-[#ff4d6d] transition-all duration-75 ease-linear"
@@ -376,7 +381,7 @@ const App: React.FC = () => {
                     statusMsg.type === 'success' ? 'bg-[#f0fff4] text-[#2f855a] border border-[#c6f6d5]' : 
                     'bg-[#ebf8ff] text-[#2b6cb0] border border-[#bee3f8]'
                   }`}>
-                    {statusMsg.type === 'error' ? <Heart className="w-4 h-4 flex-none mt-0.5 fill-current" /> : <Info className="w-4 h-4 flex-none mt-0.5" />}
+                    {statusMsg.type === 'error' ? <Heart className="w-4 h-4 fill-current" /> : <Info className="w-4 h-4" />}
                     <span className="font-medium">{statusMsg.text}</span>
                   </div>
                 )}
