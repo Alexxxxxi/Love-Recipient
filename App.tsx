@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Camera, Heart, Loader2, Info, X } from 'lucide-react';
+import { Camera, Heart, Loader2, Info, X, Users } from 'lucide-react';
 import { AppState, ReceiptLine, ReceiptData } from './types';
 import { COPY_LIBRARY, PRINT_SPEED } from './constants';
 import Receipt from './components/Receipt';
@@ -349,7 +349,9 @@ const App: React.FC = () => {
             <div className="w-full mt-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
               <div className="w-full bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/40 space-y-6">
                 <p className="text-sm text-[#5c4a3c] leading-relaxed text-center font-medium">
-                  留住此刻的温柔。<br/>请录入昵称并挑选你们的【双人合影】<br/>签署这份专属的浪漫回执。
+                  留住此刻的温柔。<br/>
+                  请录入昵称并挑选你们的<span className="text-[#ff4d6d] font-bold underline underline-offset-4 mx-1">【双人合影】</span><br/>
+                  签署这份专属的浪漫回执。
                 </p>
                 <input
                   type="text"
@@ -366,12 +368,21 @@ const App: React.FC = () => {
                 <button
                   onClick={() => !isAnalyzing && fileInputRef.current?.click()}
                   disabled={isAnalyzing}
-                  className={`w-full group relative flex items-center justify-center space-x-2 bg-[#ff4d6d] text-white px-8 py-5 rounded-full shadow-lg active:scale-95 transition-all ${isAnalyzing ? 'opacity-50' : 'hover:bg-[#ff758f] shadow-[#ff4d6d]/20'}`}
+                  className={`w-full group relative flex flex-col items-center justify-center space-y-1 bg-[#ff4d6d] text-white px-8 py-5 rounded-full shadow-lg active:scale-95 transition-all ${isAnalyzing ? 'opacity-50' : 'hover:bg-[#ff758f] shadow-[#ff4d6d]/20'}`}
                 >
                   {isAnalyzing ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /><span className="font-bold tracking-wider">正在感应心动信号...</span></>
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="font-bold tracking-wider">正在感应心动信号...</span>
+                    </div>
                   ) : (
-                    <><Camera className="w-5 h-5" /><span className="font-bold tracking-wider">签署浪漫记忆</span></>
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <Users className="w-5 h-5" />
+                        <span className="font-bold tracking-widest text-lg">点击上传双人合影</span>
+                      </div>
+                      <span className="text-[10px] opacity-80 font-normal tracking-wider">仅限双人正面清晰照片效果最佳</span>
+                    </>
                   )}
                 </button>
 
